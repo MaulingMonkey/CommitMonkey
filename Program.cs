@@ -31,7 +31,7 @@ namespace CommitMonkey {
 				};
 			DisplayIcon = Resources.CommitMonkey;
 			DirtyCheck = new Timer()
-				{ Interval = 10000
+				{ Interval = 1000
 				};
 			DirtyCheck.Tick += OnTick;
 			DirtyCheck.Start();

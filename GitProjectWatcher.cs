@@ -40,15 +40,16 @@ namespace CommitMonkey {
 			Path = path;
 		}
 
-		public bool IsDirty { get {
+		void UpdateDirtyState() {
 			var psi = new ProcessStartInfo()
-				{ Arguments              = "status"
+				{ Arguments              = "add --dry-run ."
 				, CreateNoWindow         = true
 				, FileName               = Git.Command
 				, RedirectStandardOutput = true
 				, RedirectStandardError  = true
 				, RedirectStandardInput  = true
 				, UseShellExecute        = false
+				, WindowStyle            = ProcessWindowStyle.Hidden
 				, WorkingDirectory       = Path
 				};
 			var process = Process.Start(psi);
@@ -57,7 +58,13 @@ namespace CommitMonkey {
 			string output = process.StandardOutput.ReadToEnd();
 			string errors = process.StandardError.ReadToEnd();
 			// TODO:  Check errors -- we spam git commands enough that many of the errors are transitory, though.
-			return output.Length != 0;
+			if ( errors.Length == 0 ) _IsDirty = output.Length != 0;
+		}
+
+		bool _IsDirty;
+		public bool IsDirty { get {
+			UpdateDirtyState();
+			return _IsDirty;
 		}}
 
 		public string Path { get; private set; }
