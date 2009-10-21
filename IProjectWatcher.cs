@@ -4,5 +4,6 @@
 	}
 	interface IProjectWatcher {
 		bool IsDirty { get; }
+		string Path { get; }
 	}
 }

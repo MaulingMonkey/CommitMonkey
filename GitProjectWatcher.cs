@@ -37,10 +37,29 @@ namespace CommitMonkey {
 
 	class GitProjectWatcher : IProjectWatcher {
 		public GitProjectWatcher( string path ) {
+			Path = path;
 		}
 
 		public bool IsDirty { get {
-			return true;
+			var psi = new ProcessStartInfo()
+				{ Arguments              = "status"
+				, CreateNoWindow         = true
+				, FileName               = Git.Command
+				, RedirectStandardOutput = true
+				, RedirectStandardError  = true
+				, RedirectStandardInput  = true
+				, UseShellExecute        = false
+				, WorkingDirectory       = Path
+				};
+			var process = Process.Start(psi);
+			process.Start();
+			process.WaitForExit();
+			string output = process.StandardOutput.ReadToEnd();
+			string errors = process.StandardError.ReadToEnd();
+			// TODO:  Check errors -- we spam git commands enough that many of the errors are transitory, though.
+			return output.Length != 0;
 		}}
+
+		public string Path { get; private set; }
 	}
 }

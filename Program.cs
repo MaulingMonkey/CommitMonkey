@@ -3,10 +3,21 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CommitMonkey {
 	class Program : IDisposable {
 		readonly NotifyIcon NotifyIcon;
+		readonly Timer      DirtyCheck;
+
+		Bitmap _icon;
+		Bitmap DisplayIcon { get {
+			return _icon;
+		} set {
+			if ( _icon != null ) DestroyIcon( NotifyIcon.Icon.Handle );
+			_icon = value;
+			NotifyIcon.Icon = Icon.FromHandle( _icon.GetHicon() );
+		}}
 
 		Program() {
 			NotifyIcon = new NotifyIcon()
@@ -15,10 +26,15 @@ namespace CommitMonkey {
 					, new MenuItem( "-" )
 					, new MenuItem( "E&xit"   , (s,a) => Application.Exit() )
 					})
-				, Icon    = Icon.FromHandle( Resources.CommitMonkey.GetHicon() )
 				, Text    = "AutoVCS"
 				, Visible = true
 				};
+			DisplayIcon = Resources.CommitMonkey;
+			DirtyCheck = new Timer()
+				{ Interval = 10000
+				};
+			DirtyCheck.Tick += OnTick;
+			DirtyCheck.Start();
 		}
 
 		public void Dispose() {
@@ -30,6 +46,14 @@ namespace CommitMonkey {
 			{ new GitProjectWatcherFactory()
 			};
 		readonly List<IProjectWatcher>        Watchers     = new List<IProjectWatcher>();
+
+		void OnTick( object sender, EventArgs args ) {
+			DisplayIcon = Watchers.Any( (watcher) => watcher.IsDirty )
+				? Resources.CommitMonkeyAlert
+				: Resources.CommitMonkey
+				;
+			DirtyCheck.Start();
+		}
 
 		void Watch( string path ) {
 			foreach ( var wtype in WatcherTypes ) {
@@ -60,6 +84,7 @@ namespace CommitMonkey {
 				case DialogResult.OK:
 					try {
 						Watch( fbd.SelectedPath );
+						return;
 					} catch ( Exception e ) {
 						retryresult = MessageBox.Show
 							( e.Message
