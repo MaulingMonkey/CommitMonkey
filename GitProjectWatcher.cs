@@ -2,19 +2,27 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace CommitMonkey {
 	static class Git {
-		static readonly string[] PossibleCommandPaths = new string[]
-			{ "git"
-			, @"C:\Program Files\Git\bin\git.exe"
-			, @"C:\Program Files (x86)\Git\bin\git.exe"
-			};
+		static string Find32BitProgramFiles() {
+			string path = Environment.GetEnvironmentVariable("ProgramFiles(x86)");
+			if ( String.IsNullOrEmpty(path) ) path = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+			return path;
+		}
+		static IEnumerable<string> GetPossibleCommandPaths() {
+			yield return "git";
+			string pfx86 = Environment.GetEnvironmentVariable("ProgramFiles(x86)");
+			if (!string.IsNullOrEmpty(pfx86)) yield return pfx86+@"\Git\bin\git.exe";
+			yield return Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)+@"\Git\bin\git.exe";
+		}
 
 		public static readonly string Command = FindGitCommand();
 
 		static string FindGitCommand() {
-			foreach ( var path in PossibleCommandPaths ) try {
+			foreach ( var path in GetPossibleCommandPaths() ) try {
 				var process = Process.Start(path, "--version");
 				process.WaitForExit();
 				return path;
