@@ -17,6 +17,18 @@ namespace CommitMonkey {
 			string pfx86 = Environment.GetEnvironmentVariable("ProgramFiles(x86)");
 			if (!string.IsNullOrEmpty(pfx86)) yield return pfx86+@"\Git\bin\git.exe";
 			yield return Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)+@"\Git\bin\git.exe";
+
+			// Registry keys we can also check:
+			//	HKEY_CLASSES_ROOT\Directory\shell\git_gui\command
+			//	HKEY_CLASSES_ROOT\Directory\shell\git_shell\command
+			//	HKEY_LOCAL_MACHINE\SOFTWARE\Classes\Directory\shell\git_gui\command
+			//	HKEY_LOCAL_MACHINE\SOFTWARE\Classes\Directory\shell\git_shell\command
+			//  HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Git_is1
+
+			// Other things we can check:
+			//  %PATH% (not sure if git will be picked up from plain "git" always?)
+			//  Start Menu
+			//  Desktop
 		}
 
 		public static readonly string Command = FindGitCommand();
