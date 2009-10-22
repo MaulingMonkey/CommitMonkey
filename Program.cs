@@ -7,6 +7,7 @@ using System.Linq;
 
 namespace CommitMonkey {
 	class Program : IDisposable {
+		readonly Form       Splash;
 		readonly NotifyIcon NotifyIcon;
 
 		Bitmap _icon;
@@ -19,13 +20,14 @@ namespace CommitMonkey {
 		}}
 
 		Program() {
+			Splash = new SplashForm();
 			NotifyIcon = new NotifyIcon()
 				{ ContextMenu = new ContextMenu( new[]
 					{ new MenuItem( "Watch...", (s,a) => PromptWatch() )
 					, new MenuItem( "-" )
 					, new MenuItem( "E&xit"   , (s,a) => Application.Exit() )
 					})
-				, Text    = "AutoVCS"
+				, Text    = "CommitMonkey"
 				, Visible = true
 				};
 			DisplayIcon = Resources.CommitMonkey;
@@ -94,24 +96,17 @@ namespace CommitMonkey {
 			}
 		}
 
-		Form Splash;
-		void BeginLoad() {
-			Splash = new SplashForm();
-			Splash.Show();
-			Splash.Hide();
-		}
-
 		public static void Begin( Action a ) {
 			Instance.Splash.BeginInvoke(a);
 		}
-
 		static Program Instance;
 		[STAThread] static void Main() {
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 
 			using ( Instance = new Program() ) {
-				Instance.BeginLoad();
+				Instance.Splash.Show();
+				Instance.Splash.Hide();
 				Application.Run();
 			}
 		}
