@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using System.Collections.Generic;
-using System.Linq;
+using CommitMonkey.Properties;
 
 namespace CommitMonkey {
 	class Program : IDisposable {
@@ -23,9 +24,10 @@ namespace CommitMonkey {
 			Splash = new SplashForm();
 			NotifyIcon = new NotifyIcon()
 				{ ContextMenu = new ContextMenu( new[]
-					{ new MenuItem( "Watch...", (s,a) => PromptWatch() )
+					{ new MenuItem( "Watch..." , (s,a) => PromptWatch() )
+					, new MenuItem( "Show List", (s,a) => ShowProjectStatusList() )
 					, new MenuItem( "-" )
-					, new MenuItem( "E&xit"   , (s,a) => Application.Exit() )
+					, new MenuItem( "E&xit"    , (s,a) => Application.Exit() )
 					})
 				, Text    = "CommitMonkey"
 				, Visible = true
@@ -41,7 +43,15 @@ namespace CommitMonkey {
 		readonly List<IProjectWatcherFactory> WatcherTypes = new List<IProjectWatcherFactory>()
 			{ new GitProjectWatcherFactory()
 			};
-		readonly List<IProjectWatcher>        Watchers     = new List<IProjectWatcher>();
+		readonly List<IProjectWatcher>        _Watchers     = new List<IProjectWatcher>();
+		public IEnumerable<IProjectWatcher> Watchers { get { return _Watchers; } }
+
+		public static Bitmap GetStatusIconFor( IProjectWatcher watcher ) {
+			return watcher.IsDirty
+				? Resources.CommitMonkeyAlert
+				: Resources.CommitMonkey
+				;
+		}
 
 		void UpdateStatus() {
 			DisplayIcon = Watchers.Any( (watcher) => watcher.IsDirty )
@@ -55,7 +65,7 @@ namespace CommitMonkey {
 				IProjectWatcher watcher = wtype.Create(path);
 				if ( watcher != null ) {
 					watcher.IsDirtyChanged += UpdateStatus;
-					Watchers.Add(watcher);
+					_Watchers.Add(watcher);
 					return;
 				}
 			}
@@ -66,6 +76,11 @@ namespace CommitMonkey {
 				+ "\n"
 				+ "Are you sure it's under version control?"
 				);
+		}
+
+		void ShowProjectStatusList() {
+			var psl = new ProjectStatusListForm(this);
+			psl.Show();
 		}
 
 		void PromptWatch() {

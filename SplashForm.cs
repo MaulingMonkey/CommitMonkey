@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
+using CommitMonkey.Properties;
 
 namespace CommitMonkey {
 	[System.ComponentModel.DesignerCategory("")]

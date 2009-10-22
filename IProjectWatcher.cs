@@ -38,10 +38,10 @@ namespace CommitMonkey {
 		}
 
 		void DirtyCheckTimer_Tick(object sender, EventArgs e) {
-			try {
+			//try {
 				UpdateDirtyState();
 				DirtyCheckTimer.Interval = 1000;
-			} catch ( Exception ) {}
+			//} catch ( Exception ) {} // TODO:  Handle exceptions from UpdateDirtyState
 			DirtyCheckTimer.Start();
 		}
 

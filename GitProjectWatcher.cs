@@ -56,7 +56,7 @@ namespace CommitMonkey {
 			string errors = process.StandardError.ReadToEnd();
 			
 			if ( errors.Length != 0 ) {
-				throw new Exception( errors );
+				// throw new Exception( errors ); // TODO:  Reenable when we decide to start actually handling errors
 			} else {
 				IsDirty = output.Length != 0;
 			}

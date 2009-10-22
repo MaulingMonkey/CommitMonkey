@@ -59,22 +59,14 @@
     <Compile Include="GitProjectWatcher.cs" />
     <Compile Include="IProjectWatcher.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="ProjectStatusListForm.cs">
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
@@ -83,7 +75,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\CommitMonkey.png" />
+    <None Include="Properties\Resources\CommitMonkey.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -118,10 +110,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\CommitMonkeyAlert.png" />
+    <None Include="Properties\Resources\CommitMonkeyAlert.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\CommitMonkeySplash.png" />
+    <None Include="Properties\Resources\CommitMonkeySplash.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
