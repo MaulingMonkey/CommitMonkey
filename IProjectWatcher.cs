@@ -45,7 +45,10 @@ namespace CommitMonkey {
 			DirtyCheckTimer.Start();
 		}
 
-		void DirtyWatcher_SomethingHappened(object sender, EventArgs e) {
+		void DirtyWatcher_SomethingHappened(object sender, FileSystemEventArgs e) {
+			if ( e.FullPath.StartsWith(Path     ) )
+			if (!e.FullPath.StartsWith(GitDirSub) )
+			if ( e.FullPath != GitDir )
 			Program.Begin( () => {
 				DirtyCheckTimer.Interval = 100;
 				DirtyCheckTimer.Start();
@@ -55,6 +58,8 @@ namespace CommitMonkey {
 		protected abstract void UpdateDirtyState();
 
 		public string Path { get; private set; }
+		public string GitDir { get { return Path + System.IO.Path.DirectorySeparatorChar + ".git"; } }
+		public string GitDirSub { get { return GitDir + System.IO.Path.DirectorySeparatorChar; } }
 		
 		private bool _IsDirty = false;
 		public bool IsDirty { get {
