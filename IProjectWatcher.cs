@@ -1,5 +1,6 @@
 ﻿using System.Windows.Forms;
 using System;
+using System.IO;
 
 namespace CommitMonkey {
 	interface IProjectWatcherFactory {
@@ -13,6 +14,7 @@ namespace CommitMonkey {
 	
 	abstract class ProjectWatcherBase : IProjectWatcher {
 		Timer DirtyCheckTimer;
+		FileSystemWatcher DirtyWatcher;
 
 		public ProjectWatcherBase( string path ) {
 			Path = path;
@@ -20,8 +22,34 @@ namespace CommitMonkey {
 			DirtyCheckTimer = new Timer()
 				{ Interval = 1000
 				};
-			DirtyCheckTimer.Tick += (s,a) => UpdateDirtyState();
+			DirtyCheckTimer.Tick += DirtyCheckTimer_Tick;
 			DirtyCheckTimer.Start();
+			
+			DirtyWatcher = new FileSystemWatcher(path)
+				{ EnableRaisingEvents = true
+				, IncludeSubdirectories = true
+				, InternalBufferSize = 4*1024*1024
+				, NotifyFilter = NotifyFilters.LastWrite
+				};
+			DirtyWatcher.Changed += DirtyWatcher_SomethingHappened;
+			DirtyWatcher.Created += DirtyWatcher_SomethingHappened;
+			DirtyWatcher.Deleted += DirtyWatcher_SomethingHappened;
+			DirtyWatcher.Renamed += DirtyWatcher_SomethingHappened;
+		}
+
+		void DirtyCheckTimer_Tick(object sender, EventArgs e) {
+			try {
+				UpdateDirtyState();
+				DirtyCheckTimer.Interval = 1000;
+			} catch ( Exception ) {}
+			DirtyCheckTimer.Start();
+		}
+
+		void DirtyWatcher_SomethingHappened(object sender, EventArgs e) {
+			Program.Begin( () => {
+				DirtyCheckTimer.Interval = 100;
+				DirtyCheckTimer.Start();
+			});
 		}
 
 		protected abstract void UpdateDirtyState();

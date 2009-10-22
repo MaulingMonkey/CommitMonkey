@@ -94,10 +94,26 @@ namespace CommitMonkey {
 			}
 		}
 
+		Form Splash;
+		void BeginLoad() {
+			Splash = new SplashForm();
+			Splash.Show();
+			Splash.Hide();
+		}
+
+		public static void Begin( Action a ) {
+			Instance.Splash.BeginInvoke(a);
+		}
+
+		static Program Instance;
 		[STAThread] static void Main() {
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
-			using ( var p = new Program() ) Application.Run();
+
+			using ( Instance = new Program() ) {
+				Instance.BeginLoad();
+				Application.Run();
+			}
 		}
 
 		[DllImport("user32.dll", SetLastError=true)] static extern bool DestroyIcon(IntPtr hIcon);

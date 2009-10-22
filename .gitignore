@@ -2,6 +2,9 @@
 
 *.suo
 
+*.swp
+Thumbs.db
+
 bin/
 
 obj/

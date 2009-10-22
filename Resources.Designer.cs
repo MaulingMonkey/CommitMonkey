@@ -73,5 +73,12 @@ namespace CommitMonkey {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+        
+        internal static System.Drawing.Bitmap CommitMonkeySplash {
+            get {
+                object obj = ResourceManager.GetObject("CommitMonkeySplash", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }

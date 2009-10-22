@@ -54,8 +54,12 @@ namespace CommitMonkey {
 			process.WaitForExit();
 			string output = process.StandardOutput.ReadToEnd();
 			string errors = process.StandardError.ReadToEnd();
-			// TODO:  Check errors -- we spam git commands enough that many of the errors are transitory, though.
-			if ( errors.Length == 0 ) IsDirty = output.Length != 0;
+			
+			if ( errors.Length != 0 ) {
+				throw new Exception( errors );
+			} else {
+				IsDirty = output.Length != 0;
+			}
 		}
 	}
 }
