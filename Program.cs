@@ -33,7 +33,7 @@ namespace CommitMonkey {
 			DirtyCheck = new Timer()
 				{ Interval = 1000
 				};
-			DirtyCheck.Tick += OnTick;
+			DirtyCheck.Tick += (s,a) => UpdateStatus();
 			DirtyCheck.Start();
 		}
 
@@ -47,7 +47,7 @@ namespace CommitMonkey {
 			};
 		readonly List<IProjectWatcher>        Watchers     = new List<IProjectWatcher>();
 
-		void OnTick( object sender, EventArgs args ) {
+		void UpdateStatus() {
 			DisplayIcon = Watchers.Any( (watcher) => watcher.IsDirty )
 				? Resources.CommitMonkeyAlert
 				: Resources.CommitMonkey
@@ -59,6 +59,7 @@ namespace CommitMonkey {
 			foreach ( var wtype in WatcherTypes ) {
 				IProjectWatcher watcher = wtype.Create(path);
 				if ( watcher != null ) {
+					watcher.IsDirtyChanged += UpdateStatus;
 					Watchers.Add(watcher);
 					return;
 				}

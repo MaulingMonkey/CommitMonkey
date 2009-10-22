@@ -1,5 +1,5 @@
-﻿using System.Diagnostics;
-using System;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -26,7 +26,6 @@ namespace CommitMonkey {
 		}
 	}
 
-
 	class GitProjectWatcherFactory : IProjectWatcherFactory {
 		IProjectWatcher IProjectWatcherFactory.Create( string path ) { return Create(path); }
 		public GitProjectWatcher Create( string path ) {
@@ -35,12 +34,10 @@ namespace CommitMonkey {
 		}
 	}
 
-	class GitProjectWatcher : IProjectWatcher {
-		public GitProjectWatcher( string path ) {
-			Path = path;
-		}
+	class GitProjectWatcher : ProjectWatcherBase {
+		public GitProjectWatcher( string path ): base(path) {}
 
-		void UpdateDirtyState() {
+		protected override void UpdateDirtyState() {
 			var psi = new ProcessStartInfo()
 				{ Arguments              = "add --dry-run ."
 				, CreateNoWindow         = true
@@ -58,15 +55,7 @@ namespace CommitMonkey {
 			string output = process.StandardOutput.ReadToEnd();
 			string errors = process.StandardError.ReadToEnd();
 			// TODO:  Check errors -- we spam git commands enough that many of the errors are transitory, though.
-			if ( errors.Length == 0 ) _IsDirty = output.Length != 0;
+			if ( errors.Length == 0 ) IsDirty = output.Length != 0;
 		}
-
-		bool _IsDirty;
-		public bool IsDirty { get {
-			UpdateDirtyState();
-			return _IsDirty;
-		}}
-
-		public string Path { get; private set; }
 	}
 }
