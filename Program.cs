@@ -8,7 +8,6 @@ using System.Linq;
 namespace CommitMonkey {
 	class Program : IDisposable {
 		readonly NotifyIcon NotifyIcon;
-		readonly Timer      DirtyCheck;
 
 		Bitmap _icon;
 		Bitmap DisplayIcon { get {
@@ -30,11 +29,6 @@ namespace CommitMonkey {
 				, Visible = true
 				};
 			DisplayIcon = Resources.CommitMonkey;
-			DirtyCheck = new Timer()
-				{ Interval = 1000
-				};
-			DirtyCheck.Tick += (s,a) => UpdateStatus();
-			DirtyCheck.Start();
 		}
 
 		public void Dispose() {
@@ -52,7 +46,6 @@ namespace CommitMonkey {
 				? Resources.CommitMonkeyAlert
 				: Resources.CommitMonkey
 				;
-			DirtyCheck.Start();
 		}
 
 		void Watch( string path ) {
