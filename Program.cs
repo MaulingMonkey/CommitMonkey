@@ -43,8 +43,7 @@ namespace CommitMonkey {
 		readonly List<IProjectWatcherFactory> WatcherTypes = new List<IProjectWatcherFactory>()
 			{ new GitProjectWatcherFactory()
 			};
-		readonly List<IProjectWatcher>        _Watchers     = new List<IProjectWatcher>();
-		public IEnumerable<IProjectWatcher> Watchers { get { return _Watchers; } }
+		readonly List<IProjectWatcher>        Watchers     = new List<IProjectWatcher>();
 
 		public static Bitmap GetStatusIconFor( IProjectWatcher watcher ) {
 			return watcher.IsDirty
@@ -65,7 +64,7 @@ namespace CommitMonkey {
 				IProjectWatcher watcher = wtype.Create(path);
 				if ( watcher != null ) {
 					watcher.IsDirtyChanged += UpdateStatus;
-					_Watchers.Add(watcher);
+					Watchers.Add(watcher);
 					return;
 				}
 			}
@@ -79,7 +78,7 @@ namespace CommitMonkey {
 		}
 
 		void ShowProjectStatusList() {
-			var psl = new ProjectStatusListForm(this);
+			var psl = new ProjectStatusListForm(Watchers);
 			psl.Show();
 		}
 

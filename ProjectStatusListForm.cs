@@ -50,18 +50,78 @@ namespace CommitMonkey {
 			_StatusIcon.Top = (Height-_StatusIcon.Height)/2;
 			_PathLabel .Top = (Height-_PathLabel .Height)/2;
 			_PathLabel.Left = _StatusIcon.Right + 3;
+			Width = _PathLabel.Right;
+		}
+	}
+
+	[System.ComponentModel.DesignerCategory("")]
+	class ProjectStatusListFooter : UserControl {
+		readonly IList<IProjectWatcher> Watchers;
+
+		readonly Button[] Buttons;
+
+		public ProjectStatusListFooter( IList<IProjectWatcher> watchers ) {
+			Watchers = watchers;
+
+			Button AddWatcher, Close;
+
+			Buttons = new[]
+				{ AddWatcher = new Button() { Text = "&Add New Watcher" }
+				, Close      = new Button() { Text = "&Close" }
+				};
+			AddWatcher.Click += AddWatcher_Click;
+			Close.Click      += Close_Click;
+
+			foreach ( var button in Buttons ) Controls.Add(button);
+		}
+
+		protected override void Dispose(bool disposing) {
+			if ( disposing ) {
+				foreach ( var button in Buttons ) button.Dispose();
+			}
+			base.Dispose(disposing);
+		}
+
+		protected override void OnResize(EventArgs e) {
+			base.OnResize(e);
+
+			int margin = 3;
+			int totalmargins = margin*(Buttons.Length-1);
+			int buttonwidth  = (Width-totalmargins)/Buttons.Length;
+			int buttonstride = buttonwidth+margin;
+
+			for ( int i = 0 ; i < Buttons.Length ; ++i ) {
+				Buttons[i].Left = buttonstride*i;
+				Buttons[i].Width = buttonwidth;
+				Buttons[i].Height = Height;
+			}
+
+			Invalidate();
+			foreach ( var button in Buttons ) button.Invalidate();
+		}
+
+		void AddWatcher_Click(object sender, EventArgs e) {
+			MessageBox.Show( "Not yet implemented" );
+		}
+
+		void Close_Click(object sender, EventArgs e) {
+			ParentForm.Close();
 		}
 	}
 
 	[System.ComponentModel.DesignerCategory("")]
 	class ProjectStatusListForm : Form {
-		readonly Program Program;
+		readonly IList<IProjectWatcher> Watchers;
 		readonly List<ProjectStatusLineControl> Lines = new List<ProjectStatusLineControl>();
+		readonly ProjectStatusListFooter Footer;
 
-		public ProjectStatusListForm( Program program ) {
-			Program = program;
+		public ProjectStatusListForm( IList<IProjectWatcher> watchers ) {
+			Watchers = watchers;
 
-			foreach ( var watcher in Program.Watchers ) {
+			Text            = "Project Watch List";
+			FormBorderStyle = FormBorderStyle.FixedSingle;
+
+			foreach ( var watcher in Watchers ) {
 				watcher.IsDirtyChanged += Watcher_IsDirtyChanged;
 				int top = (Lines.Count == 0 ? 0 : Lines[Lines.Count-1].Bottom) + 3;
 
@@ -72,6 +132,15 @@ namespace CommitMonkey {
 				Controls.Add(line);
 				Lines.Add(line);
 			}
+
+			Controls.Add( Footer = new ProjectStatusListFooter(Watchers)
+				{ Top    = ClientSize.Height-23
+				, Left   = 3
+				, Width  = ClientSize.Width-6
+				, Height = 20
+				});
+
+			ClientSize = new Size( 300, ((Lines.Count == 0) ? 0 : Lines[Lines.Count-1].Bottom) + 26 );
 		}
 
 		protected override void Dispose(bool disposing) {
@@ -82,6 +151,15 @@ namespace CommitMonkey {
 				}
 			}
 			base.Dispose(disposing);
+		}
+
+		protected override void OnResize(EventArgs e) {
+			base.OnResize(e);
+
+			Footer.Width = ClientSize.Width-6;
+			Footer.Top = ClientSize.Height-23;
+			Footer.Invalidate();
+			Invalidate();
 		}
 
 		void Watcher_IsDirtyChanged() {
