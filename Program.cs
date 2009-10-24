@@ -11,6 +11,8 @@ namespace CommitMonkey {
 		readonly Form       Splash;
 		readonly NotifyIcon NotifyIcon;
 
+		public static string ConfigXml { get { return Application.LocalUserAppDataPath+@"\config.xml"; }}
+
 		Bitmap _icon;
 		Bitmap DisplayIcon { get {
 			return _icon;
@@ -40,7 +42,7 @@ namespace CommitMonkey {
 			NotifyIcon.Dispose();
 		}
 
-		readonly ProjectWatcherList           Watchers     = new ProjectWatcherList();
+		readonly ProjectWatcherList Watchers = new ProjectWatcherList(ConfigXml);
 
 		public static Bitmap GetStatusIconFor( IProjectWatcher watcher ) {
 			return watcher.IsDirty

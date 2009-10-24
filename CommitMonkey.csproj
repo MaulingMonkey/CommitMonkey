@@ -74,6 +74,7 @@
     </Compile>
     <Compile Include="SplashForm.cs">
     </Compile>
+    <Compile Include="XmlConfig.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\Resources\CommitMonkey.png" />

@@ -3,6 +3,9 @@ using System;
 using System.Diagnostics;
 using System.Collections;
 using System.Windows.Forms;
+using System.Xml.Serialization;
+using System.IO;
+using System.Linq;
 
 namespace CommitMonkey {
 	class ProjectWatcherList : IEnumerable<IProjectWatcher> {
@@ -15,16 +18,38 @@ namespace CommitMonkey {
 		public event Action<IProjectWatcher> WatcherRemoved = delegate {};
 		public event Action<IProjectWatcher> WatcherDirtyChanged = delegate {};
 
+		readonly string XmlConfigPath;
+		public ProjectWatcherList( string xmlconfigpath ) {
+			XmlConfigPath = xmlconfigpath;
+			if ( File.Exists(xmlconfigpath) ) {
+				XmlSerializer s = new XmlSerializer(typeof(XmlConfig));
+				XmlConfig xmlconfig;
+				using ( TextReader r = new StreamReader(xmlconfigpath) ) xmlconfig = (XmlConfig)s.Deserialize(r);
+				foreach ( var project in xmlconfig.Projects ) Watch(project.Path);
+			}
+		}
+
+		public void SaveToXmlFile( string xmlconfigpath ) {
+			var xmlconfig = new XmlConfig()
+				{ Projects = Watchers.Select( (watcher) => new XmlConfig.Project() { Path = watcher.Path } ).ToArray()
+				};
+
+			XmlSerializer s = new XmlSerializer( typeof(XmlConfig) );
+			using ( TextWriter w = new StreamWriter(xmlconfigpath) ) s.Serialize( w, xmlconfig );
+		}
+
 		public void Add( IProjectWatcher watcher ) {
 			Watchers.Add(watcher);
 			WatcherAdded(watcher);
 			watcher.IsDirtyChanged += watcher_IsDirtyChanged;
+			SaveToXmlFile( XmlConfigPath );
 		}
 
 		public void Remove( IProjectWatcher watcher ) {
 			Debug.Assert( Watchers.Remove(watcher) );
 			WatcherRemoved(watcher);
 			watcher.IsDirtyChanged -= watcher_IsDirtyChanged;
+			SaveToXmlFile( XmlConfigPath );
 		}
 
 		void Watch( string path ) {
