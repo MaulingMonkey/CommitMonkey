@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using CommitMonkey.Properties;
 using System.Drawing;
 using System;
+using System.Diagnostics;
 
 namespace CommitMonkey {
 	[System.ComponentModel.DesignerCategory("")]
@@ -28,7 +29,7 @@ namespace CommitMonkey {
 				});
 			UpdateControlPositions();
 			Watcher.IsDirtyChanged += Watcher_IsDirtyChanged;
-			Watcher_IsDirtyChanged();
+			Watcher_IsDirtyChanged(Watcher);
 		}
 
 		protected override void Dispose(bool disposing) {
@@ -40,7 +41,8 @@ namespace CommitMonkey {
 			base.Dispose(disposing);
 		}
 
-		void Watcher_IsDirtyChanged() {
+		void Watcher_IsDirtyChanged( IProjectWatcher watcher ) {
+			Debug.Assert( Watcher == watcher );
 			_StatusIcon.Image = Program.GetStatusIconFor(Watcher);
 			UpdateControlPositions();
 		}
@@ -56,11 +58,11 @@ namespace CommitMonkey {
 
 	[System.ComponentModel.DesignerCategory("")]
 	class ProjectStatusListFooter : UserControl {
-		readonly IList<IProjectWatcher> Watchers;
+		readonly ProjectWatcherList Watchers;
 
 		readonly Button[] Buttons;
 
-		public ProjectStatusListFooter( IList<IProjectWatcher> watchers ) {
+		public ProjectStatusListFooter( ProjectWatcherList watchers ) {
 			Watchers = watchers;
 
 			Button AddWatcher, Close;
@@ -101,7 +103,7 @@ namespace CommitMonkey {
 		}
 
 		void AddWatcher_Click(object sender, EventArgs e) {
-			MessageBox.Show( "Not yet implemented" );
+			Watchers.PromptWatch();
 		}
 
 		void Close_Click(object sender, EventArgs e) {
@@ -111,27 +113,19 @@ namespace CommitMonkey {
 
 	[System.ComponentModel.DesignerCategory("")]
 	class ProjectStatusListForm : Form {
-		readonly IList<IProjectWatcher> Watchers;
+		readonly ProjectWatcherList Watchers;
 		readonly List<ProjectStatusLineControl> Lines = new List<ProjectStatusLineControl>();
 		readonly ProjectStatusListFooter Footer;
 
-		public ProjectStatusListForm( IList<IProjectWatcher> watchers ) {
+		public ProjectStatusListForm( ProjectWatcherList watchers ) {
 			Watchers = watchers;
+			Watchers.WatcherAdded         += Watchers_WatcherAdded;
+			Watchers.WatcherRemoved       += Watchers_WatcherRemoved;
+			Watchers.WatcherDirtyChanged  += Watcher_IsDirtyChanged;
 
 			Text            = "Project Watch List";
 			FormBorderStyle = FormBorderStyle.FixedSingle;
-
-			foreach ( var watcher in Watchers ) {
-				watcher.IsDirtyChanged += Watcher_IsDirtyChanged;
-				int top = (Lines.Count == 0 ? 0 : Lines[Lines.Count-1].Bottom) + 3;
-
-				var line = new ProjectStatusLineControl(watcher)
-					{ Top  = top
-					, Left = 3
-					};
-				Controls.Add(line);
-				Lines.Add(line);
-			}
+			StartPosition   = FormStartPosition.CenterScreen;
 
 			Controls.Add( Footer = new ProjectStatusListFooter(Watchers)
 				{ Top    = ClientSize.Height-23
@@ -140,15 +134,39 @@ namespace CommitMonkey {
 				, Height = 20
 				});
 
+			ClientSize = new Size( 300, 26 );
+
+			foreach ( var watcher in Watchers ) Watchers_WatcherAdded(watcher);
+		}
+
+		void Watchers_WatcherAdded(IProjectWatcher watcher) {
+			int top = (Lines.Count == 0 ? 0 : Lines[Lines.Count-1].Bottom) + 3;
+			var ctrl = new ProjectStatusLineControl(watcher)
+				{ Top = top
+				, Left = 3
+				};
+			Lines.Add(ctrl);
+			Controls.Add(ctrl);
 			ClientSize = new Size( 300, ((Lines.Count == 0) ? 0 : Lines[Lines.Count-1].Bottom) + 26 );
+		}
+
+		void Watchers_WatcherRemoved(IProjectWatcher watcher) {
+			var ctrl = Lines.Find( (line) => line.Watcher == watcher );
+			Lines.Remove(ctrl);
+			Controls.Remove(ctrl);
+
+			// Relocate removed elements:
+			int nexttop = 0;
+			foreach ( var line in Lines ) {
+				line.Top = nexttop;
+				nexttop = line.Bottom + 3;
+			}
 		}
 
 		protected override void Dispose(bool disposing) {
 			if ( disposing ) {
-				foreach ( var line in Lines ) {
-					line.Watcher.IsDirtyChanged -= Watcher_IsDirtyChanged;
-					line.Dispose();
-				}
+				foreach ( var line in Lines ) line.Dispose();
+				Watchers.WatcherDirtyChanged -= Watcher_IsDirtyChanged;
 			}
 			base.Dispose(disposing);
 		}
@@ -162,7 +180,7 @@ namespace CommitMonkey {
 			Invalidate();
 		}
 
-		void Watcher_IsDirtyChanged() {
+		void Watcher_IsDirtyChanged( IProjectWatcher watcher ) {
 			ProjectStatusLineControl previous = null;
 
 			foreach ( var line in Lines ) {

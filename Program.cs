@@ -24,26 +24,23 @@ namespace CommitMonkey {
 			Splash = new SplashForm();
 			NotifyIcon = new NotifyIcon()
 				{ ContextMenu = new ContextMenu( new[]
-					{ new MenuItem( "Watch..." , (s,a) => PromptWatch() )
-					, new MenuItem( "Show List", (s,a) => ShowProjectStatusList() )
+					{ new MenuItem( "Configure List", (s,a) => ShowProjectStatusList() )
 					, new MenuItem( "-" )
-					, new MenuItem( "E&xit"    , (s,a) => Application.Exit() )
+					, new MenuItem( "E&xit"         , (s,a) => Application.Exit() )
 					})
 				, Text    = "CommitMonkey"
 				, Visible = true
 				};
 			DisplayIcon = Resources.CommitMonkey;
+			Watchers.WatcherDirtyChanged += (w) => UpdateStatus();
 		}
 
 		public void Dispose() {
 			DestroyIcon( NotifyIcon.Icon.Handle );
 			NotifyIcon.Dispose();
 		}
-		
-		readonly List<IProjectWatcherFactory> WatcherTypes = new List<IProjectWatcherFactory>()
-			{ new GitProjectWatcherFactory()
-			};
-		readonly List<IProjectWatcher>        Watchers     = new List<IProjectWatcher>();
+
+		readonly ProjectWatcherList           Watchers     = new ProjectWatcherList();
 
 		public static Bitmap GetStatusIconFor( IProjectWatcher watcher ) {
 			return watcher.IsDirty
@@ -59,55 +56,9 @@ namespace CommitMonkey {
 				;
 		}
 
-		void Watch( string path ) {
-			foreach ( var wtype in WatcherTypes ) {
-				IProjectWatcher watcher = wtype.Create(path);
-				if ( watcher != null ) {
-					watcher.IsDirtyChanged += UpdateStatus;
-					Watchers.Add(watcher);
-					return;
-				}
-			}
-
-			throw new Exception
-				( "Could not recognize the version control system for\n"
-				+ path+"\n"
-				+ "\n"
-				+ "Are you sure it's under version control?"
-				);
-		}
-
 		void ShowProjectStatusList() {
 			var psl = new ProjectStatusListForm(Watchers);
 			psl.Show();
-		}
-
-		void PromptWatch() {
-			using ( var fbd = new FolderBrowserDialog()
-				{ Description = "Select a path to watch"
-				, RootFolder = System.Environment.SpecialFolder.MyComputer
-				})
-			{
-				for ( DialogResult retryresult = DialogResult.Retry ; retryresult == DialogResult.Retry ; )
-				switch ( fbd.ShowDialog() )
-				{
-				case DialogResult.OK:
-					try {
-						Watch( fbd.SelectedPath );
-						return;
-					} catch ( Exception e ) {
-						retryresult = MessageBox.Show
-							( e.Message
-							, "Error watching \""+fbd.SelectedPath+"\""
-							, MessageBoxButtons.RetryCancel
-							, MessageBoxIcon.Error
-							);
-					}
-					break;
-				default:
-					return;
-				}
-			}
 		}
 
 		public static void Begin( Action a ) {

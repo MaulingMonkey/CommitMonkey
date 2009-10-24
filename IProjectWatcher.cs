@@ -8,7 +8,7 @@ namespace CommitMonkey {
 	}
 	interface IProjectWatcher {
 		bool IsDirty { get; }
-		event Action IsDirtyChanged;
+		event Action<IProjectWatcher> IsDirtyChanged;
 		string Path { get; }
 	}
 	
@@ -67,8 +67,8 @@ namespace CommitMonkey {
 		} protected set {
 			bool oldvalue = _IsDirty;
 			_IsDirty = value;
-			if ( value != oldvalue ) IsDirtyChanged();
+			if ( value != oldvalue ) IsDirtyChanged(this);
 		}}
-		public event Action IsDirtyChanged;
+		public event Action<IProjectWatcher> IsDirtyChanged = delegate {};
 	}
 }
