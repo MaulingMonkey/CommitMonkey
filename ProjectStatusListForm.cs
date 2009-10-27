@@ -185,6 +185,7 @@ namespace CommitMonkey {
 
 			foreach ( var line in Lines ) {
 				line.Top = ((previous==null) ? 0 : previous.Bottom) + 3;
+				previous = line;
 			}
 		}
 	}
