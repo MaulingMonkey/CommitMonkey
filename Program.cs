@@ -33,6 +33,7 @@ namespace CommitMonkey {
 				, Text    = "CommitMonkey"
 				, Visible = true
 				};
+			NotifyIcon.DoubleClick += (s,a) => ShowProjectStatusList();
 			DisplayIcon = Resources.CommitMonkey;
 			Watchers.WatcherDirtyChanged += (w) => UpdateStatus();
 		}
