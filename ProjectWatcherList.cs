@@ -25,7 +25,11 @@ namespace CommitMonkey {
 				XmlSerializer s = new XmlSerializer(typeof(XmlConfig));
 				XmlConfig xmlconfig;
 				using ( TextReader r = new StreamReader(xmlconfigpath) ) xmlconfig = (XmlConfig)s.Deserialize(r);
-				foreach ( var project in xmlconfig.Projects ) Watch(project.Path);
+				foreach ( var project in xmlconfig.Projects ) try {
+					Watch(project.Path);
+				} catch ( DirectoryNotFoundException ) {
+					MessageBox.Show( "Cannot watch "+project.Path+" -- can't find directory!", "Error loading config",MessageBoxButtons.OK, MessageBoxIcon.Error ); 
+				}
 			}
 		}
 
