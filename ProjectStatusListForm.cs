@@ -34,13 +34,13 @@ namespace CommitMonkey {
 
 		void Watchers_WatcherAdded(IProjectWatcher watcher) {
 			int top = (Lines.Count == 0 ? 0 : Lines[Lines.Count-1].Bottom) + 3;
-			var ctrl = new ProjectStatusLineControl(watcher)
+			var ctrl = new ProjectStatusLineControl(watcher,(sender,args) => Watchers.Remove(watcher))
 				{ Top = top
 				, Left = 3
 				};
 			Lines.Add(ctrl);
 			Controls.Add(ctrl);
-			ClientSize = new Size( 300, ((Lines.Count == 0) ? 0 : Lines[Lines.Count-1].Bottom) + 26 );
+			RedoLayout();
 		}
 
 		void Watchers_WatcherRemoved(IProjectWatcher watcher) {
@@ -54,6 +54,22 @@ namespace CommitMonkey {
 				line.Top = nexttop;
 				nexttop = line.Bottom + 3;
 			}
+			RedoLayout();
+		}
+
+		void Watcher_IsDirtyChanged( IProjectWatcher watcher ) {
+			RedoLayout();
+		}
+
+		void RedoLayout() {
+			ProjectStatusLineControl previous = null;
+
+			foreach ( var line in Lines ) {
+				line.Top = ((previous==null) ? 0 : previous.Bottom) + 3;
+				previous = line;
+			}
+
+			ClientSize = new Size( 300, ((Lines.Count == 0) ? 0 : Lines[Lines.Count-1].Bottom) + 26 );
 		}
 
 		protected override void Dispose(bool disposing) {
@@ -71,15 +87,6 @@ namespace CommitMonkey {
 			Footer.Top = ClientSize.Height-23;
 			Footer.Invalidate();
 			Invalidate();
-		}
-
-		void Watcher_IsDirtyChanged( IProjectWatcher watcher ) {
-			ProjectStatusLineControl previous = null;
-
-			foreach ( var line in Lines ) {
-				line.Top = ((previous==null) ? 0 : previous.Bottom) + 3;
-				previous = line;
-			}
 		}
 	}
 }

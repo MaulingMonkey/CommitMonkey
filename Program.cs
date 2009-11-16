@@ -36,6 +36,7 @@ namespace CommitMonkey {
 			NotifyIcon.DoubleClick += (s,a) => ShowProjectStatusList();
 			DisplayIcon = Resources.CommitMonkey;
 			Watchers.WatcherDirtyChanged += (w) => UpdateStatus();
+			Watchers.WatcherRemoved      += (w) => UpdateStatus();
 		}
 
 		public void Dispose() {
