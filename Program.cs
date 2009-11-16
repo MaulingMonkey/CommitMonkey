@@ -26,14 +26,14 @@ namespace CommitMonkey {
 			Splash = new SplashForm();
 			NotifyIcon = new NotifyIcon()
 				{ ContextMenu = new ContextMenu( new[]
-					{ new MenuItem( "Configure List", (s,a) => ShowProjectStatusList() )
+					{ new MenuItem( "Configure List", (s,a) => ToggleShowProjectStatusList() )
 					, new MenuItem( "-" )
 					, new MenuItem( "E&xit"         , (s,a) => Application.Exit() )
 					})
 				, Text    = "CommitMonkey"
 				, Visible = true
 				};
-			NotifyIcon.DoubleClick += (s,a) => ShowProjectStatusList();
+			NotifyIcon.DoubleClick += (s,a) => ToggleShowProjectStatusList();
 			DisplayIcon = Resources.CommitMonkey;
 			Watchers.WatcherDirtyChanged += (w) => UpdateStatus();
 			Watchers.WatcherRemoved      += (w) => UpdateStatus();
@@ -60,9 +60,16 @@ namespace CommitMonkey {
 				;
 		}
 
-		void ShowProjectStatusList() {
-			var psl = new ProjectStatusListForm(Watchers);
-			psl.Show();
+		ProjectStatusListForm PSL;
+		void ToggleShowProjectStatusList() {
+			if ( PSL != null && PSL.Visible ) {
+				PSL.Close();
+				PSL = null;
+			} else {
+				if ( PSL != null ) PSL.Dispose();
+				PSL = new ProjectStatusListForm(Watchers);
+				PSL.Show();
+			}
 		}
 
 		public static void Begin( Action a ) {
