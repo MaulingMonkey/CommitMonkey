@@ -59,6 +59,8 @@
     <Compile Include="GitProjectWatcher.cs" />
     <Compile Include="IProjectWatcher.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="ProjectStatusLineControl.cs" />
+    <Compile Include="ProjectStatusListFooter.cs" />
     <Compile Include="ProjectStatusListForm.cs">
     </Compile>
     <Compile Include="ProjectWatcherList.cs" />
