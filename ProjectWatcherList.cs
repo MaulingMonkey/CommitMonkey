@@ -50,7 +50,7 @@ namespace CommitMonkey {
 		}
 
 		public void Remove( IProjectWatcher watcher ) {
-			Debug.Assert( Watchers.Remove(watcher) );
+			if (!Watchers.Remove(watcher)) Debug.Fail("Failboat is fail");
 			WatcherRemoved(watcher);
 			watcher.IsDirtyChanged -= watcher_IsDirtyChanged;
 			SaveToXmlFile( XmlConfigPath );

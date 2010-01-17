@@ -47,13 +47,6 @@ namespace CommitMonkey {
 			var ctrl = Lines.Find( (line) => line.Watcher == watcher );
 			Lines.Remove(ctrl);
 			Controls.Remove(ctrl);
-
-			// Relocate removed elements:
-			int nexttop = 0;
-			foreach ( var line in Lines ) {
-				line.Top = nexttop;
-				nexttop = line.Bottom + 3;
-			}
 			RedoLayout();
 		}
 
