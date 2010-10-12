@@ -39,6 +39,7 @@ namespace CommitMonkey {
 				};
 
 			XmlSerializer s = new XmlSerializer( typeof(XmlConfig) );
+			Directory.CreateDirectory(Path.GetDirectoryName(xmlconfigpath));
 			using ( TextWriter w = new StreamWriter(xmlconfigpath) ) s.Serialize( w, xmlconfig );
 		}
 
