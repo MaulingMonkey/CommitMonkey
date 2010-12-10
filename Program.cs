@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using CommitMonkey.Properties;
+using Microsoft.Win32;
 
 namespace CommitMonkey {
 	class Program : IDisposable {
@@ -79,6 +80,10 @@ namespace CommitMonkey {
 		[STAThread] static void Main() {
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
+
+			SystemEvents.SessionEnding += (sender,args) => {
+				Application.Exit();
+			};
 
 			using ( Instance = new Program() ) {
 				Instance.Splash.Show();
